@@ -22,6 +22,7 @@ class OdometryNode(Node):
     def __init__(self):
         Node.__init__(self,'erp_odometry_node')
 
+        self.odom = Odometry()
         self.odom_x = 0.0
         self.odom_y = 0.0
         self.odom_yaw = 0.0
@@ -34,6 +35,7 @@ class OdometryNode(Node):
         self.wheel_pos = 0.0
         self.lg = self.get_logger() # logger
         self.lg.info('odom_calculator...')
+        self.TICK2RAD = 0.06283185307
 
         self.wheel_radius = self.declare_parameter('wheel_radius', 0.265).get_parameter_value().double_value
         self.wheel_base= self.declare_parameter('wheel_base', 1.040).get_parameter_value().double_value
@@ -58,7 +60,7 @@ class OdometryNode(Node):
         self.serial_sub  # prevent unused variable warning
 
 
-        self.publisher_ = self.create_publisher(Odometry, 'erp_odom', 10) # declare publisher
+        self.odom_pub = self.create_publisher(Odometry, 'erp_odom', 10) # declare publisher
         pub_rate = 100  # seconds, 100hz
 
 
@@ -66,10 +68,14 @@ class OdometryNode(Node):
 
         self.timer = self.create_timer(1/pub_rate, self.timer_callback)
         self.i = 0
+        self.t1 = time.time()
+
+
+
 
     def timer_callback(self):
 
-        self.lg.info('publishing...')
+        # self.lg.info('publishing...')
         # self.joint_state_pub.publish(joint_state_msg)
         self.odom_pub.publish(self.odom)
 
@@ -96,17 +102,17 @@ class OdometryNode(Node):
             # 각속도 
             self.angular_vel = math.tan(np.deg2rad(data.steer)) * self.linear_vel / self.wheel_base
 
-            self.odom_yaw += self.angular_vel/np.pi()
+            self.odom_yaw += self.angular_vel
                     
-            self.odom_x += self.delta_pos * math.cos(-np.deg2rad(self.odom_yaw))
-            self.odom_y += self.delta_pos * math.sin(-np.deg2rad(self.odom_yaw))
-            self.lg.info("Previous Encoder: %d", self.last_encoder)
-            self.lg.info("Delta Pose: %f", self.delta_pos)
-            self.lg.info("Linear Vel: %f", self.linear_vel)
-            self.lg.info("Angular Vel: %f", self.angular_vel)
-            self.lg.info("Odom X: %f", self.odom_x)
-            self.lg.info("Odom Y: %f", self.odom_y)
-            self.lg.info("Odom Yaw: %f", self.odom_yaw)
+            self.odom_x += self.delta_pos * math.cos(np.deg2rad(self.odom_yaw))
+            self.odom_y += self.delta_pos * math.sin(np.deg2rad(self.odom_yaw))
+            self.lg.info(f'Previous Encoder: {self.last_encoder}')
+            self.lg.info(f'Delta Pose: {self.delta_pos}')
+            self.lg.info(f'Linear Vel: {self.linear_vel}')
+            self.lg.info(f'Angular Vel: {self.angular_vel}')
+            self.lg.info(f'Odom X: {self.odom_x}')
+            self.lg.info(f'Odom Y: {self.odom_y}')
+            self.lg.info(f'Odom Yaw: {self.odom_yaw}')
 
             odom_quat = quaternion_from_euler(0, 0, -np.deg2rad(self.odom_yaw))
 
@@ -137,7 +143,7 @@ class OdometryNode(Node):
             # Set the velocity of the Odometry message (in the 'base_link' frame),
             # based on the data from the erp42_interface
             self.odom.twist.twist.linear.x = self.linear_vel
-            self.odom.twist.twist.linear.y = 0 # since the vehicle cannot move like a crab.
+            self.odom.twist.twist.linear.y = 0.0 # since the vehicle cannot move like a crab.
             self.odom.twist.twist.angular.z = self.angular_vel
 
             # ## publishing tf
