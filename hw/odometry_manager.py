@@ -96,7 +96,7 @@ class OdometryNode(Node):
             # 각속도 
             self.angular_vel = math.tan(np.deg2rad(data.steer)) * self.linear_vel / self.wheel_base
 
-            self.odom_yaw += self.angular_vel
+            self.odom_yaw += self.angular_vel/np.pi()
                     
             self.odom_x += self.delta_pos * math.cos(-np.deg2rad(self.odom_yaw))
             self.odom_y += self.delta_pos * math.sin(-np.deg2rad(self.odom_yaw))
@@ -172,7 +172,7 @@ class OdometryNode(Node):
 
 
     def reset_odometry(self):
-        self.SetOdometry(0.0, 0.0, 0.0,0.0,0.0,0.0)
+        self.set_odometry(0.0, 0.0, 0.0,0.0,0.0,0.0)
         self.odom_pub.publish(self.odom)
 
     def set_odometry(self, x, y, z, r,p,yaw):
