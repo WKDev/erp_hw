@@ -28,6 +28,8 @@ setup(
         'console_scripts': [
             'imu_driver = hw.imu_driver:main',
             'erp_driver = hw.erp_driver:main',
+            'odometry_manager = hw.odometry_manager:main',
+
         ],
     },
 )

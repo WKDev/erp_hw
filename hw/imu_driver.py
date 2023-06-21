@@ -60,19 +60,17 @@ class ImuNode(Node):
         while True:
             port = self.get_parameter('imu_port').get_parameter_value().string_value
             baud = self.get_parameter('imu_baud').get_parameter_value().string_value
-            # is_launch = self.get_parameter('is_launch').get_parameter_value().bool_value
+            is_launch = self.get_parameter('is_launch').get_parameter_value().bool_value
 
             try:
-                self.lg.debug('ebimu_node')                
+                self.lg.debug('ebimu_node')   
+                ser = serial.Serial(port, baud)
                 try:
-                    ser = serial.Serial(port, baud)
-
                     data = ser.readline().decode().strip().split(',')
                     self.lg.info(f'imu_port : {port}')
                     self.lg.info('IMU OK')
                 except:
                     self.lg.error('IMU FAILED')
-
                     pass
 
                 while True:
@@ -111,20 +109,21 @@ class ImuNode(Node):
 
                         # print(f'{r=}  {p=} {y=}')
 
-                        if True:
+                        if not is_launch:
                             print(f'---')
                             print(f'timestamp : {self.imu_msg.header.stamp.sec}.{self.imu_msg.header.stamp.nanosec}\n')
                             print(f'Accel: x:{self.imu_msg.linear_acceleration.x:.3f} | y:{self.imu_msg.linear_acceleration.y:.3f} | z:{self.imu_msg.linear_acceleration.z:.3f} m/s^2',end='\n\n')
                             print(f'Gyro: x:{self.imu_msg.angular_velocity.x:.3f} | y:{self.imu_msg.angular_velocity.y:.3f} | z:{self.imu_msg.angular_velocity.z:.3f}deg/s',end='\n\n')
                             print(f'imu_temp : {temp}C | battery : {battery}%',end='\n\n')
 
+                        
                     except:
-                        self.lg.warn(f'{traceback.format_exc()}')
+                        self.lg.warning(f'{traceback.format_exc()}')
                         continue
 
 
             except serial.SerialException:
-                self.lg.warn(f'Unable to connect to serial port:{port}, baud:{baud}, retrying...')
+                self.lg.warning(f'Unable to connect to serial port:{port}, baud:{baud}, retrying...')
                 time.sleep(1.0)        
 
             

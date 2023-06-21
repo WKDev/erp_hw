@@ -15,7 +15,7 @@ def generate_launch_description():
 
         ## IMU
         launch_ros.actions.Node(
-            namespace= "erp", package='hw', executable='imu_driver', output='screen',
+            namespace= "", package='hw', executable='imu_driver', output='screen',
             parameters=[
             # {"imu_port": '/dev/ttyUSB0'},
             {"imu_port": '/dev/serial/by-id/usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_0001-if00-port0'},
@@ -23,12 +23,22 @@ def generate_launch_description():
             {"is_launch": True},
             ]),
 
-        ## GPS    
+        ## GPS
+
         # launch_ros.actions.Node(
         #     namespace= "erp", package='nmea_navsat_driver', executable='erp_driver', output='screen',
         #     parameters=[
         #     {"port": '/dev/ttyUSB0'},
         #     {"baud": '115200'},
         #     ])
+
+        ## Odometry Calculation
+        # launch_ros.actions.Node(
+        #     namespace= "", package='hw', executable='odometry_manager', output='screen',
+        #     # parameters=[
+        #     # {"port": '/dev/ttyUSB0'},
+        #     # {"baud": '115200'},
+        #     # ]
+        #     )
 
     ])

@@ -15,16 +15,15 @@ from erp_msgs.msg import ErpData
 
 
 class ErpNode(Node):
-
     def __init__(self):
 
         Node.__init__(self,'erp_driver')
 
-        self.declare_parameter('erp_port', '/dev/ttyUSB0')
+        self.declare_parameter('erp_port', '/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A50285BI-if00-port0')
         self.declare_parameter('erp_baud', '115200')
         
         self.publisher_ = self.create_publisher(ErpData, 'ErpData', 10) # declare publisher
-        pub_rate = 100  # seconds, 50hz
+        pub_rate = 100  # seconds, 100hz
 
         self.lg = self.get_logger() # logger
 
@@ -52,12 +51,11 @@ class ErpNode(Node):
                 ser = serial.Serial(port, baud)
                 self.lg.info('trying to connect ERP')
 
-                try:
-                    data = ser.readline()
-                    self.lg.info('ERP OK')
-                except:
-                    pass
-
+                # try:
+                #     data = ser.readline()
+                #     self.lg.info('ERP OK')
+                # except:
+                #     self.lg.error('ERP FAILED')
 
                 while True:
                     # Read data from the serial port
@@ -89,7 +87,13 @@ class ErpNode(Node):
                             enc = int(''.join(pair_list[8:-1][::-1]),16)
                             alive = int(pair_list[-1],16)
 
+
+                            if enc > 2147483647:
+                                enc = enc-4294967286
+
                             gear_state = 'D' if gear ==0 else 'N' if gear ==1 else 'R'
+
+                            print(enc)
                             
                             # print(f'{m_or_a=} {e_stop=} {gear=}({gear_state}) {speed=} {steer=:.2f} {brake=} {enc=} {alive=}')
 
